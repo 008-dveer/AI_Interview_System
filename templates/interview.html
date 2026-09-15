@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Technical Interview</title>
+</head>
+
+<body>
+
+    <h1>Technical Interview 🤖</h1>
+
+    <h2>Question {{ number + 1 }}</h2>
+
+    <p>{{ question }}</p>
+
+    <form method="POST">
+
+        <textarea
+            name="answer"
+            rows="8"
+            cols="60"
+            placeholder="Write your answer here..."
+            required
+        ></textarea>
+
+        <br><br>
+
+        <input type="hidden" name="number" value="{{ number }}">
+
+        <button type="submit">
+            {% if number + 1 == 5 %}
+                Finish Interview
+            {% else %}
+                Next Question
+            {% endif %}
+        </button>
+
+    </form>
+
+</body>
+
+</html>
