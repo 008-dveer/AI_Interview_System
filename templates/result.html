@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Interview Report</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 40px;
+        }
+
+        .report {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .score {
+            text-align: center;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        li {
+            margin: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="report">
+
+    <h1>Interview Report 🎯</h1>
+
+    <div class="score">
+        {{ score }}/{{ max_score }}
+    </div>
+
+    <h2>Percentage: {{ percentage }}%</h2>
+
+    <h2>Performance</h2>
+
+    <p>{{ performance }}</p>
+
+
+    <h2>💪 Strengths</h2>
+
+    <ul>
+        {% for item in strengths %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+
+
+    <h2>⚠️ Weaknesses</h2>
+
+    <ul>
+        {% for item in weaknesses %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+
+
+    <h2>💡 Suggestions</h2>
+
+    <ul>
+        {% for item in suggestions %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+
+
+    <br>
+
+    <a href="/interview">
+        <button>Start Again</button>
+    </a>
+
+</div>
+
+</body>
+
+</html>
