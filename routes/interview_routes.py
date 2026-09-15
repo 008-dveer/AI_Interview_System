@@ -10,45 +10,51 @@ def interview():
 
     if request.method == "POST":
 
-        # Student ka answer
-        answer = request.form["answer"]
+        # Student's answer
+        answer = request.form.get("answer", "").strip()
 
         # Current question number
-        number = int(request.form["number"])
+        number = int(request.form.get("number", 0))
 
         # Current question
         question = questions[number]
 
-        # Answer evaluate karo
-        score = evaluate_answer(answer, question)
+        # Evaluate answer via AI (with fallback)
+        score, feedback_text = evaluate_answer(answer, question)
 
-        # Score session mein save karo
+        # Save scores to session
         scores = session.get("scores", [])
         scores.append(score)
         session["scores"] = scores
 
-        # Agar next question hai
-        if number + 1 < len(questions):
+        # Save question history to session for detailed AI feedback
+        history = session.get("history", [])
+        history.append({
+            "question": question,
+            "answer": answer,
+            "score": score,
+            "feedback": feedback_text
+        })
+        session["history"] = history
 
+        # Next question check
+        if number + 1 < len(questions):
             return render_template(
                 "interview.html",
                 question=questions[number + 1],
-                number=number + 1
+                number=number + 1,
+                total_questions=len(questions)
             )
 
-        # Final score
+        # Final score calculation
         total_score = sum(scores)
-
         max_score = len(questions) * 10
+        percentage = round((total_score / max_score) * 100) if max_score > 0 else 0
 
-        percentage = round(
-            (total_score / max_score) * 100
-        )
+        # Generate comprehensive overall AI feedback
+        feedback = get_feedback(percentage, interview_history=history)
 
-        # Feedback generate karo
-        feedback = get_feedback(percentage)
-
-        # Result page
+        # Render result page
         return render_template(
             "result.html",
             score=total_score,
@@ -57,14 +63,17 @@ def interview():
             performance=feedback["performance"],
             strengths=feedback["strengths"],
             weaknesses=feedback["weaknesses"],
-            suggestions=feedback["suggestions"]
+            suggestions=feedback["suggestions"],
+            history=history
         )
 
-    # New interview start hone par scores reset
+    # Reset session on new interview start
     session["scores"] = []
+    session["history"] = []
 
     return render_template(
         "interview.html",
         question=questions[0],
-        number=0
+        number=0,
+        total_questions=len(questions)
     )

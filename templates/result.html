@@ -9,35 +9,89 @@
             font-family: Arial, sans-serif;
             background: #f4f6f8;
             padding: 40px;
+            color: #333;
         }
 
         .report {
-            max-width: 700px;
+            max-width: 750px;
             margin: auto;
             background: white;
-            padding: 30px;
+            padding: 35px;
             border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
         h1 {
             text-align: center;
+            color: #1e293b;
         }
 
         .score {
             text-align: center;
-            font-size: 40px;
+            font-size: 42px;
             font-weight: bold;
+            color: #2563eb;
+            margin: 15px 0;
+        }
+
+        .percentage {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+            margin-top: 25px;
+            color: #1e293b;
         }
 
         li {
-            margin: 10px;
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .question-card {
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+        }
+
+        .question-card p {
+            margin: 4px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-top: 30px;
         }
 
         button {
-            padding: 12px 20px;
+            padding: 12px 24px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        button:hover {
+            background: #1d4ed8;
         }
     </style>
 
@@ -50,48 +104,53 @@
     <h1>Interview Report 🎯</h1>
 
     <div class="score">
-        {{ score }}/{{ max_score }}
+        {{ score }} / {{ max_score }}
     </div>
 
-    <h2>Percentage: {{ percentage }}%</h2>
+    <div class="percentage">
+        <h3>Percentage: {{ percentage }}%</h3>
+    </div>
 
     <h2>Performance</h2>
-
     <p>{{ performance }}</p>
 
-
     <h2>💪 Strengths</h2>
-
     <ul>
         {% for item in strengths %}
             <li>{{ item }}</li>
         {% endfor %}
     </ul>
 
-
-    <h2>⚠️ Weaknesses</h2>
-
+    <h2>⚠️ Areas to Improve</h2>
     <ul>
         {% for item in weaknesses %}
             <li>{{ item }}</li>
         {% endfor %}
     </ul>
 
-
-    <h2>💡 Suggestions</h2>
-
+    <h2>💡 Recommendations</h2>
     <ul>
         {% for item in suggestions %}
             <li>{{ item }}</li>
         {% endfor %}
     </ul>
 
+    {% if history %}
+    <h2>📝 Detailed Question Feedback</h2>
+    {% for item in history %}
+        <div class="question-card">
+            <p><strong>Q{{ loop.index }}: {{ item.question }}</strong> <span class="badge">Score: {{ item.score }}/10</span></p>
+            <p style="color: #475569;"><em>Your Answer:</em> {{ item.answer }}</p>
+            <p style="color: #166534;"><strong>AI Feedback:</strong> {{ item.feedback }}</p>
+        </div>
+    {% endfor %}
+    {% endif %}
 
-    <br>
-
-    <a href="/interview">
-        <button>Start Again</button>
-    </a>
+    <div class="btn-container">
+        <a href="/interview">
+            <button>Start Again</button>
+        </a>
+    </div>
 
 </div>
 
