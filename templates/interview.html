@@ -1,42 +1,417 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Technical Interview</title>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Session | Question {{ number + 1 }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            --card-bg: rgba(30, 41, 59, 0.75);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .badge {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            border: 1px solid rgba(165, 180, 252, 0.3);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .question-indicator {
+            font-size: 14px;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        /* Progress Bar */
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #3b82f6);
+            border-radius: 9999px;
+            transition: width 0.4s ease;
+        }
+
+        /* Question Box */
+        .question-box {
+            background: rgba(15, 23, 42, 0.6);
+            border-left: 4px solid #6366f1;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+        }
+
+        .question-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #818cf8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.4;
+        }
+
+        /* Input Controls */
+        .textarea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .voice-btn {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(165, 180, 252, 0.3);
+            color: #e0e7ff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .voice-btn:hover {
+            background: rgba(99, 102, 241, 0.3);
+        }
+
+        .voice-btn.listening {
+            background: #ef4444;
+            color: white;
+            border-color: #f87171;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 16px;
+            color: #f8fafc;
+            font-family: inherit;
+            font-size: 15px;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+        }
+
+        .textarea-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 28px;
+        }
+
+        .submit-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px -5px rgba(79, 70, 229, 0.5);
+            background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 50;
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .loading-subtext {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
 <body>
 
-    <h1>Technical Interview 🤖</h1>
+<div class="container">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Analyzing your response with AI...</div>
+        <div class="loading-subtext">Evaluating technical precision & clarity</div>
+    </div>
 
-    <h2>Question {{ number + 1 }}</h2>
+    <!-- Header / Progress -->
+    <div class="top-bar">
+        <span class="badge">{{ topic }}</span>
+        <span class="question-indicator">Question {{ number + 1 }} of {{ total_questions }}</span>
+    </div>
 
-    <p>{{ question }}</p>
+    <!-- Progress Track -->
+    <div class="progress-track">
+        <div class="progress-fill" style="width: {{ ((number + 1) / total_questions) * 100 }}%;"></div>
+    </div>
 
-    <form method="POST">
+    <!-- Question Box -->
+    <div class="question-box">
+        <div class="question-label">Technical Query</div>
+        <div class="question-text">{{ question }}</div>
+    </div>
+
+    <!-- Interview Form -->
+    <form id="interviewForm" method="POST" onsubmit="handleFormSubmit()">
+        <div class="textarea-header">
+            <label for="answerField" style="font-size: 14px; font-weight: 600; color: #cbd5e1;">Your Response</label>
+            <button type="button" id="voiceBtn" class="voice-btn" onclick="toggleVoice()">
+                <span id="voiceIcon">🎙️</span>
+                <span id="voiceText">Speak Answer</span>
+            </button>
+        </div>
 
         <textarea
+            id="answerField"
             name="answer"
-            rows="8"
-            cols="60"
-            placeholder="Write your answer here..."
+            placeholder="Type your response here or click 'Speak Answer' to talk..."
             required
+            oninput="updateWordCount()"
         ></textarea>
 
-        <br><br>
+        <div class="textarea-footer">
+            <span id="voiceStatus">Press microphone or type freely.</span>
+            <span id="wordCount">0 words</span>
+        </div>
 
         <input type="hidden" name="number" value="{{ number }}">
 
-        <button type="submit">
-            {% if number + 1 == total_questions %}
-                Finish Interview
-            {% else %}
-                Next Question
-            {% endif %}
-        </button>
-
+        <div class="actions">
+            <button type="submit" id="submitBtn" class="submit-btn">
+                <span>
+                    {% if number + 1 == total_questions %}
+                        Finish & Generate Diagnostic Report 🎯
+                    {% else %}
+                        Submit & Next Question →
+                    {% endif %}
+                </span>
+            </button>
+        </div>
     </form>
+</div>
+
+<script>
+    // Word counter
+    function updateWordCount() {
+        const text = document.getElementById('answerField').value.trim();
+        const count = text.length > 0 ? text.split(/\s+/).length : 0;
+        document.getElementById('wordCount').textContent = `${count} words`;
+    }
+
+    // Form submit loading overlay
+    function handleFormSubmit() {
+        const overlay = document.getElementById('loadingOverlay');
+        const submitBtn = document.getElementById('submitBtn');
+        overlay.style.display = 'flex';
+        submitBtn.disabled = true;
+    }
+
+    // Speech-to-Text (Web Speech API)
+    let recognition = null;
+    let isListening = false;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = function() {
+            isListening = true;
+            const btn = document.getElementById('voiceBtn');
+            btn.classList.add('listening');
+            document.getElementById('voiceText').textContent = 'Listening (Click to Stop)';
+            document.getElementById('voiceStatus').textContent = '🔴 Listening... speak into your microphone';
+        };
+
+        recognition.onresult = function(event) {
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript + ' ';
+                }
+            }
+            if (finalTranscript) {
+                const answerField = document.getElementById('answerField');
+                answerField.value = (answerField.value + ' ' + finalTranscript).trim();
+                updateWordCount();
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            stopVoice();
+            document.getElementById('voiceStatus').textContent = 'Microphone error: ' + event.error;
+        };
+
+        recognition.onend = function() {
+            stopVoice();
+        };
+    }
+
+    function toggleVoice() {
+        if (!recognition) {
+            alert('Speech Recognition is not supported by your browser. Please try Chrome, Edge, or Brave.');
+            return;
+        }
+        if (isListening) {
+            recognition.stop();
+            stopVoice();
+        } else {
+            try {
+                recognition.start();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    }
+
+    function stopVoice() {
+        isListening = false;
+        const btn = document.getElementById('voiceBtn');
+        btn.classList.remove('listening');
+        document.getElementById('voiceText').textContent = 'Speak Answer';
+        document.getElementById('voiceStatus').textContent = 'Speech converted to text.';
+    }
+</script>
 
 </body>
-
 </html>

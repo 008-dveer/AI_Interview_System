@@ -1,13 +1,17 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template
 from routes.interview_routes import interview_bp
 
-app = Flask(__name__)
+load_dotenv()
 
-app.secret_key = "ai-interview-secret-key"
+app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "ai-interview-secure-session-key-2026")
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    from models.questions import QUESTION_BANKS
+    return render_template("index.html", topics=list(QUESTION_BANKS.keys()))
 
 app.register_blueprint(interview_bp)
 
