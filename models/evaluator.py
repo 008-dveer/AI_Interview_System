@@ -6,14 +6,25 @@ from openai import OpenAI
 
 load_dotenv()
 
+# Cached client and config singleton
+_CACHED_CLIENT = None
+_CACHED_MODEL = None
+_CACHED_BASE_URL = None
+_CLIENT_INITIALIZED = False
+
 
 def get_grok_config():
     """
-    Configures and returns the OpenAI client, model name, and base URL for Grok / Groq.
-    Supports:
+    Returns a cached singleton OpenAI client, model name, and base URL for Grok/Groq.
+    Auto-detects:
+    - Groq Cloud (keys starting with 'gsk_', base_url="https://api.groq.com/openai/v1", model="openai/gpt-oss-120b")
     - xAI Grok (default: base_url="https://api.x.ai/v1", model="grok-2-latest")
-    - Groq Cloud (keys starting with 'gsk_', base_url="https://api.groq.com/openai/v1", model="llama-3.3-70b-versatile")
     """
+    global _CACHED_CLIENT, _CACHED_MODEL, _CACHED_BASE_URL, _CLIENT_INITIALIZED
+
+    if _CLIENT_INITIALIZED:
+        return _CACHED_CLIENT, _CACHED_MODEL, _CACHED_BASE_URL
+
     api_key = (
         os.getenv("GROK_API_KEY")
         or os.getenv("XAI_API_KEY")
@@ -21,27 +32,30 @@ def get_grok_config():
     )
 
     if not api_key or api_key.strip() == "" or "YOUR_GROK_API_KEY" in api_key:
+        _CLIENT_INITIALIZED = True
         return None, None, None
 
     api_key = api_key.strip()
     custom_base_url = os.getenv("GROK_BASE_URL")
     custom_model = os.getenv("GROK_MODEL")
 
-    # If it's a Groq Cloud key (starts with 'gsk_')
     if api_key.startswith("gsk_") or (custom_base_url and "groq.com" in custom_base_url):
         base_url = custom_base_url or "https://api.groq.com/openai/v1"
         model = custom_model or "openai/gpt-oss-120b"
     else:
-        # Default to xAI Grok
         base_url = custom_base_url or "https://api.x.ai/v1"
         model = custom_model or "grok-2-latest"
 
     try:
-        client = OpenAI(api_key=api_key, base_url=base_url)
-        return client, model, base_url
+        _CACHED_CLIENT = OpenAI(api_key=api_key, base_url=base_url, timeout=20.0)
+        _CACHED_MODEL = model
+        _CACHED_BASE_URL = base_url
     except Exception as e:
-        print(f"Warning: Failed to initialize Grok client: {e}")
-        return None, None, None
+        print(f"Warning: Failed to initialize Grok/Groq client: {e}")
+        _CACHED_CLIENT = None
+
+    _CLIENT_INITIALIZED = True
+    return _CACHED_CLIENT, _CACHED_MODEL, _CACHED_BASE_URL
 
 
 def extract_json(raw_text):
@@ -57,60 +71,57 @@ def extract_json(raw_text):
 
 def keyword_evaluate(answer, question):
     """
-    Fallback rule-based keyword evaluation if API key is not provided or unavailable.
+    Fallback rule-based evaluation if API is unavailable.
     """
-    keywords = {
-        "What is Object-Oriented Programming?":
-            ["class", "object", "inheritance", "polymorphism"],
-
-        "What is inheritance in OOP?":
-            ["class", "inherit", "parent", "child"],
-
-        "What is polymorphism?":
-            ["many", "form", "overloading", "overriding"],
-
-        "What is encapsulation?":
-            ["data", "method", "class", "private"],
-
-        "What is a database?":
-            ["data", "store", "table", "database"]
-    }
-
     answer_lower = answer.lower()
-    required = keywords.get(question, [])
+    words = answer_lower.split()
 
-    if len(required) == 0:
-        return 5, "Answer recorded."
+    if len(words) < 3:
+        return 2, "Answer is too brief to evaluate technical depth."
 
-    matched = sum(1 for word in required if word in answer_lower)
-    score = round((matched / len(required)) * 10)
-    feedback = f"Matched {matched} of {len(required)} key concepts."
+    # Heuristic scoring based on length and common technical structure
+    word_count = len(words)
+    if word_count > 30:
+        score = 8
+        feedback = "Detailed explanation provided with good technical context."
+    elif word_count > 15:
+        score = 6
+        feedback = "Relevant answer, but could be elaborated with real-world examples."
+    else:
+        score = 4
+        feedback = "Basic response provided; expand with more technical definitions."
+
     return score, feedback
 
 
-def evaluate_answer(answer, question):
+def evaluate_answer(answer, question, topic="Technical"):
     """
-    Evaluates candidate answer using Grok AI, with fallback to keyword matching.
+    Evaluates candidate answer using Grok AI, with fallback.
     Returns: (score: int, feedback: str)
     """
+    answer_clean = answer.strip() if answer else ""
+    if len(answer_clean.split()) < 3:
+        return 1, "The answer was blank or too brief to demonstrate technical competency."
+
     client, model, _ = get_grok_config()
 
     if client:
         try:
-            prompt = f"""You are an experienced technical interviewer.
-Evaluate the candidate's answer to the following technical interview question.
+            prompt = f"""You are a senior technical interviewer conducting a {topic} interview.
+Evaluate the candidate's answer to the question below.
 
 Question: {question}
-Candidate Answer: {answer}
+Candidate Answer: {answer_clean}
 
-Provide:
-1. A score from 0 to 10 (10 being an accurate, clear, and comprehensive explanation; 0 being blank or completely incorrect).
-2. A concise 1-2 sentence feedback highlighting technical accuracy or what needs improvement.
+Criteria:
+- Technical accuracy
+- Completeness and depth
+- Clarity of explanation
 
-Return your response strictly as valid JSON matching this schema:
+Return strictly a valid JSON object matching this schema:
 {{
   "score": <integer from 0 to 10>,
-  "feedback": "<concise feedback string>"
+  "feedback": "<concise 1-2 sentence feedback explaining what was good or what needs improvement>"
 }}
 """
             response = client.chat.completions.create(
@@ -118,11 +129,12 @@ Return your response strictly as valid JSON matching this schema:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an expert technical interviewer. Return your response strictly as valid JSON with keys 'score' and 'feedback'."
+                        "content": f"You are an expert {topic} interviewer. Respond strictly with valid JSON."
                     },
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.2
+                temperature=0.2,
+                max_tokens=250
             )
 
             raw = response.choices[0].message.content
@@ -138,19 +150,19 @@ Return your response strictly as valid JSON matching this schema:
     return keyword_evaluate(answer, question)
 
 
-def get_feedback(percentage, interview_history=None):
+def get_feedback(percentage, interview_history=None, topic="Technical"):
     """
     Generates structured overall feedback.
-    Uses Grok AI if available and history is provided, else falls back to default brackets.
+    Uses AI if available and history is provided, else falls back to default brackets.
     """
     client, model, _ = get_grok_config()
 
     if client and interview_history:
         try:
-            prompt = f"""You are a senior technical hiring manager reviewing an entire technical interview.
+            prompt = f"""You are a senior hiring manager reviewing an entire candidate interview for a {topic} role.
 
 Overall Score Percentage: {percentage}%
-Detailed Interview Log:
+Detailed Question & Answer Log:
 {json.dumps(interview_history, indent=2)}
 
 Provide an honest, constructive summary of the candidate's performance.
@@ -158,8 +170,8 @@ Return strictly a valid JSON object in this exact schema:
 {{
   "performance": "<Short summary with an emoji, e.g., 'Strong Performance 🚀'>",
   "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
-  "weaknesses": ["<weakness 1>", "<weakness 2>"],
-  "suggestions": ["<suggestion 1>", "<suggestion 2>"]
+  "weaknesses": ["<area to improve 1>", "<area to improve 2>"],
+  "suggestions": ["<actionable recommendation 1>", "<actionable recommendation 2>"]
 }}
 """
             response = client.chat.completions.create(
@@ -167,11 +179,12 @@ Return strictly a valid JSON object in this exact schema:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a technical hiring manager. Return your response strictly as valid JSON."
+                        "content": f"You are a technical hiring manager specializing in {topic}. Return strictly valid JSON."
                     },
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3
+                temperature=0.3,
+                max_tokens=400
             )
 
             raw = response.choices[0].message.content
@@ -191,45 +204,45 @@ Return strictly a valid JSON object in this exact schema:
         return {
             "performance": "Excellent 🔥",
             "strengths": [
-                "Strong technical understanding",
-                "Good knowledge of core concepts",
-                "Answers are relevant and structured"
+                f"Strong understanding of {topic} principles",
+                "Good technical articulation and clarity",
+                "Demonstrated relevant conceptual knowledge"
             ],
             "weaknesses": [
-                "Try to incorporate more real-world examples and edge cases"
+                "Incorporate more real-world system design and edge-case handling"
             ],
             "suggestions": [
-                "Practice explaining system design and trade-offs",
-                "Maintain consistent technical depth"
+                "Practice explaining architectural trade-offs",
+                "Continue maintaining consistent technical depth"
             ]
         }
     elif percentage >= 50:
         return {
             "performance": "Good 👍",
             "strengths": [
-                "Basic concepts are understood",
-                "Most answers are relevant to the questions"
+                f"Basic {topic} fundamentals are understood",
+                "Answers are relevant to the questions asked"
             ],
             "weaknesses": [
-                "Some explanations lack depth or technical precision"
+                "Some explanations lacked technical depth or specific terminology"
             ],
             "suggestions": [
                 "Revise core definitions and practical implementations",
-                "Practice answering under timed conditions"
+                "Practice answering technical questions under timed conditions"
             ]
         }
     else:
         return {
             "performance": "Needs Improvement 💪",
             "strengths": [
-                "Showed willingness to attempt the questions"
+                "Showed willingness to engage with challenging interview questions"
             ],
             "weaknesses": [
-                "Core fundamentals need significant strengthening",
-                "Answers lacked key technical terms"
+                f"Core {topic} concepts require further study and revision",
+                "Answers were too brief or missed key mechanisms"
             ],
             "suggestions": [
-                "Review foundational OOP and computer science concepts",
-                "Practice writing out explanations before speaking or submitting"
+                f"Review fundamental {topic} documentation and tutorials",
+                "Practice mock interviews focusing on structuring explanations clearly"
             ]
         }
