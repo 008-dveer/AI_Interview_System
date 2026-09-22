@@ -105,29 +105,27 @@ pip install -r requirements.txt
 ---
 
 ### 6. Run the Application
+
+#### Option A: Terminal / CLI Mode (No Browser or URL Needed) 💻
+Run the entire technical interview directly in your terminal:
+```bash
+python cli.py
+```
+- Select topic and number of questions using simple number prompts.
+- Type your technical answers directly in the terminal.
+- Get instant AI evaluation scores and feedback after every question.
+- Receive a full diagnostic report with an option to save it to a local file.
+
+#### Option B: Web Browser Interface 🌐
 ```bash
 python app.py
 ```
-
-You should see output similar to:
-```
- * Serving Flask app 'app'
- * Debug mode: on
- * Running on http://127.0.0.1:5000
-```
-
----
-
-### 7. Access in Browser
 Open your browser and navigate to:
 ```
 http://127.0.0.1:5000
 ```
+- Includes modern Glassmorphic UI and native Voice Input (Speech-to-Text).
 
-1. Select your target domain (e.g. *Python Developer*, *OOP*, *DSA*).
-2. Choose question count (3 or 5 questions).
-3. Click **Begin Technical Interview**.
-4. Type or speak your answers and view your comprehensive AI report at the end!
 
 ---
 

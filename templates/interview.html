@@ -259,6 +259,64 @@
             font-size: 13px;
             color: var(--text-muted);
         }
+
+        /* Instant Evaluation Banner for Previous Question */
+        .feedback-banner {
+            background: rgba(15, 23, 42, 0.7);
+            border-left: 4px solid #10b981;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-left-width: 4px;
+        }
+
+        .feedback-banner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 12px;
+        }
+
+        .feedback-banner-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #34d399;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .feedback-score-badge {
+            font-size: 13px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 9999px;
+        }
+
+        .feedback-score-badge.high {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .feedback-score-badge.mid {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .feedback-score-badge.low {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .feedback-banner-body {
+            font-size: 14px;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -282,9 +340,24 @@
         <div class="progress-fill" style="width: {{ ((number + 1) / total_questions) * 100 }}%;"></div>
     </div>
 
+    <!-- Previous Question Evaluation Feedback (if available) -->
+    {% if last_evaluation %}
+    <div class="feedback-banner">
+        <div class="feedback-banner-header">
+            <span class="feedback-banner-title">✅ Feedback for Question {{ last_evaluation.question_number }}</span>
+            <span class="feedback-score-badge {% if last_evaluation.score >= 8 %}high{% elif last_evaluation.score >= 5 %}mid{% else %}low{% endif %}">
+                Score: {{ last_evaluation.score }} / 10
+            </span>
+        </div>
+        <div class="feedback-banner-body">
+            {{ last_evaluation.feedback }}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Question Box -->
     <div class="question-box">
-        <div class="question-label">Technical Query</div>
+        <div class="question-label">Technical Query {{ number + 1 }}</div>
         <div class="question-text">{{ question }}</div>
     </div>
 
@@ -338,9 +411,12 @@
     // Form submit loading overlay
     function handleFormSubmit() {
         const overlay = document.getElementById('loadingOverlay');
-        const submitBtn = document.getElementById('submitBtn');
         overlay.style.display = 'flex';
-        submitBtn.disabled = true;
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+            submitBtn.style.pointerEvents = 'none';
+            submitBtn.style.opacity = '0.7';
+        }
     }
 
     // Speech-to-Text (Web Speech API)
