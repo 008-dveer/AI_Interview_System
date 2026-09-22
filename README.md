@@ -89,7 +89,7 @@ pip install -r requirements.txt
 
 ### 5. Configure Your API Key
 
-1. Copy the `.env.example` file to create your `.env` file:
+1. Copy the `.env.example` file to create your `.env` file :
    ```bash
    cp .env.example .env
    ```
