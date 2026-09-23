@@ -7,6 +7,7 @@ An interactive, AI-powered technical interview simulator built with **Python (Fl
 ## ✨ Key Features
 
 - **⚡ Lightning-Fast AI Evaluation**: Powered by Groq's high-speed inference engine (`openai/gpt-oss-120b` / `llama-3.3`) for sub-second evaluations.
+- **🔄 Dynamic Non-Repeating Questions**: Questions change every time you start an interview! Uses dynamic AI question generation tailored to the chosen topic and seniority level, with a fallback to random sampling from a 15+ question bank per category.
 - **🎯 Multiple Technical Domains**:
   - 🧱 Object-Oriented Programming (OOP) & System Design
   - 🐍 Python Developer Fundamentals

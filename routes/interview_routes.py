@@ -1,6 +1,6 @@
 import uuid
 from flask import Blueprint, render_template, request, session, redirect, url_for
-from models.questions import QUESTION_BANKS, questions as default_questions
+from models.questions import QUESTION_BANKS, questions as default_questions, get_interview_questions
 from models.evaluator import evaluate_answer, get_feedback
 
 interview_bp = Blueprint("interview", __name__)
@@ -19,8 +19,7 @@ def get_or_create_session():
         session_id = str(uuid.uuid4())
         session["session_id"] = session_id
         topic = session.get("topic", "OOP & Software Design")
-        bank = QUESTION_BANKS.get(topic, default_questions)
-        questions = session.get("selected_questions", bank[:5])
+        questions = session.get("selected_questions") or get_interview_questions(topic, 5)
         INTERVIEW_SESSIONS[session_id] = {
             "topic": topic,
             "questions": questions,
@@ -36,7 +35,7 @@ def get_or_create_session():
 @interview_bp.route("/start", methods=["POST"])
 def start_interview():
     """
-    Initializes a new interview session with the chosen topic and question count.
+    Initializes a new interview session with dynamic non-repeating questions.
     """
     topic = request.form.get("topic", "OOP & Software Design")
     try:
@@ -44,8 +43,8 @@ def start_interview():
     except (ValueError, TypeError):
         question_count = 5
 
-    bank = QUESTION_BANKS.get(topic, default_questions)
-    selected_questions = bank[:question_count]
+    # Dynamically generate fresh questions using AI with random bank fallback
+    selected_questions = get_interview_questions(topic, question_count, use_ai=True)
 
     session_id = str(uuid.uuid4())
     session["session_id"] = session_id

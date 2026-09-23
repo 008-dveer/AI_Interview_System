@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 # Initialize environment
 load_dotenv()
 
-from models.questions import QUESTION_BANKS
+from models.questions import QUESTION_BANKS, get_interview_questions
 from models.evaluator import evaluate_answer, get_feedback
 
 # ANSI Colors for terminal styling
@@ -68,17 +68,17 @@ def choose_topic():
 def choose_question_count(max_available):
     print(f"{BOLD}Select Number of Questions:{RESET}")
     print(f"  {CYAN}[1]{RESET} Quick Practice (3 Questions)")
-    print(f"  {CYAN}[2]{RESET} Full Round ({min(5, max_available)} Questions)")
-    print(f"  {CYAN}[3]{RESET} All Available ({max_available} Questions)")
+    print(f"  {CYAN}[2]{RESET} Standard Interview (5 Questions)")
+    print(f"  {CYAN}[3]{RESET} Deep Dive (10 Questions)")
 
     while True:
         choice = input(f"\n{YELLOW}Choose an option (1-3) [default: 1]: {RESET}").strip()
         if choice in ("", "1"):
-            return min(3, max_available)
+            return 3
         elif choice == "2":
-            return min(5, max_available)
+            return 5
         elif choice == "3":
-            return max_available
+            return min(10, max_available)
         else:
             print(f"{RED}Please enter 1, 2, or 3.{RESET}")
 
@@ -95,9 +95,11 @@ def get_answer():
 def run_interview():
     print_banner()
     topic = choose_topic()
-    available_questions = QUESTION_BANKS[topic]
+    available_questions = QUESTION_BANKS.get(topic, [])
     q_count = choose_question_count(len(available_questions))
-    selected_questions = available_questions[:q_count]
+
+    print(f"\n{CYAN}[Generating fresh, dynamic questions for this session...]{RESET}")
+    selected_questions = get_interview_questions(topic, q_count, use_ai=True)
 
     interview_history = []
     total_score = 0
