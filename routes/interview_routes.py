@@ -111,16 +111,9 @@ def interview():
         next_index = submitted_number + 1
         data["current_index"] = next_index
 
-        # If there are more questions, show next question along with evaluation of previous answer
+        # If there are more questions, proceed to the next question
         if next_index < total_questions:
-            return render_template(
-                "interview.html",
-                question=questions[next_index],
-                number=next_index,
-                total_questions=total_questions,
-                topic=topic,
-                last_evaluation=eval_item
-            )
+            return redirect(url_for("interview.interview"))
 
         # All questions answered - compute final diagnostic results
         total_score = sum(data["scores"])

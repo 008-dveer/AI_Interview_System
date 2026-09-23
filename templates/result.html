@@ -180,56 +180,97 @@
 
         /* Question Breakdown Cards */
         .question-card {
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.55);
             border: 1px solid var(--card-border);
             border-radius: 14px;
-            padding: 18px 22px;
-            margin-bottom: 14px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .question-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 10px;
+            gap: 16px;
+            margin-bottom: 14px;
         }
 
         .question-text {
             font-weight: 600;
             font-size: 15px;
             color: #f1f5f9;
+            line-height: 1.5;
         }
 
         .question-score {
-            background: rgba(99, 102, 241, 0.2);
-            color: #a5b4fc;
-            padding: 4px 10px;
+            padding: 5px 12px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 700;
             white-space: nowrap;
         }
 
+        .score-high {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .score-mid {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .score-low {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
         .candidate-answer {
             font-size: 14px;
             color: #94a3b8;
-            margin-bottom: 8px;
-            line-height: 1.5;
+            margin-bottom: 12px;
+            line-height: 1.6;
+            background: rgba(30, 41, 59, 0.4);
+            padding: 12px 14px;
+            border-radius: 8px;
+            border-left: 3px solid #6366f1;
+        }
+
+        .candidate-answer strong {
+            color: #cbd5e1;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .candidate-answer em {
-            color: #cbd5e1;
+            color: #e2e8f0;
             font-style: normal;
         }
 
         .ai-feedback {
             font-size: 14px;
-            color: #86efac;
-            line-height: 1.5;
-            padding: 8px 12px;
-            background: rgba(16, 185, 129, 0.1);
+            color: #e2e8f0;
+            line-height: 1.6;
+            padding: 12px 14px;
+            background: rgba(16, 185, 129, 0.08);
             border-radius: 8px;
+            border-left: 3px solid #10b981;
+        }
+
+        .ai-feedback strong {
+            color: #34d399;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* Actions */
@@ -368,20 +409,24 @@
         </div>
     </div>
 
-    <!-- Detailed Question Breakdown -->
+    <!-- Detailed Question Breakdown & AI Feedback -->
     {% if history %}
-    <div class="section-title">📝 Question-by-Question Breakdown</div>
+    <div class="section-title">📝 Question-by-Question Detailed Feedback</div>
     {% for item in history %}
         <div class="question-card">
             <div class="question-header">
-                <div class="question-text">Q{{ loop.index }}: {{ item.question }}</div>
-                <div class="question-score">{{ item.score }} / 10</div>
+                <div class="question-text"><strong>Question {{ loop.index }}:</strong> {{ item.question }}</div>
+                <div class="question-score {% if item.score >= 8 %}score-high{% elif item.score >= 5 %}score-mid{% else %}score-low{% endif %}">
+                    Score: {{ item.score }} / 10
+                </div>
             </div>
             <div class="candidate-answer">
-                <strong>Your Answer:</strong> <em>{{ item.answer }}</em>
+                <strong>Your Submitted Response:</strong>
+                <em>{{ item.answer }}</em>
             </div>
             <div class="ai-feedback">
-                <strong>AI Feedback:</strong> {{ item.feedback }}
+                <strong>AI Diagnostic Feedback:</strong>
+                {{ item.feedback }}
             </div>
         </div>
     {% endfor %}

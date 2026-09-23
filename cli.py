@@ -130,16 +130,7 @@ def run_interview():
             "feedback": feedback
         })
 
-        # Color-coded score
-        if score >= 8:
-            score_color = GREEN
-        elif score >= 5:
-            score_color = YELLOW
-        else:
-            score_color = RED
-
-        print(f"Score: {score_color}{BOLD}{score} / 10{RESET} {DIM}(evaluated in {elapsed:.1f}s){RESET}")
-        print(f"Feedback: {feedback}")
+        print(f"{GREEN}✓ Response recorded.{RESET} {DIM}(evaluated in {elapsed:.1f}s){RESET}")
         print("-" * 64)
 
     # Final overall evaluation
@@ -170,6 +161,23 @@ def run_interview():
     print(f"\n{CYAN}{BOLD}Recommendations & Action Items:{RESET}")
     for item in feedback_report.get("suggestions", []):
         print(f"  [>] {item}")
+
+    print("\n" + "-" * 64)
+    print(f"{BOLD}Question-by-Question Detailed Feedback:{RESET}")
+    print("-" * 64)
+    for idx, item in enumerate(interview_history, 1):
+        sc = item["score"]
+        if sc >= 8:
+            sc_color = GREEN
+        elif sc >= 5:
+            sc_color = YELLOW
+        else:
+            sc_color = RED
+
+        print(f"\n{BOLD}{CYAN}Q{idx}: {item['question']}{RESET}")
+        print(f"Score: {sc_color}{BOLD}{sc} / 10{RESET}")
+        print(f"{DIM}Your Answer: {item['answer']}{RESET}")
+        print(f"{GREEN}AI Feedback: {item['feedback']}{RESET}")
 
     print("\n" + "=" * 64)
 
